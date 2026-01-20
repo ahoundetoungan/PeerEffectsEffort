@@ -10,22 +10,18 @@ library(readstata13)
 library(ggplot2)
 library(PartialNetwork)
 
-proot <- c("~/GPAeffort",
-           "~/Dropbox/Papers - In progress/EffortGPA/Code-EffortGPA")
-root  <- sapply(proot, dir.exists)
-root  <- proot[root][1]
-setwd(root)
-
+PATH_DATA_IN  <- "~/Dropbox/Data/AHdata/"  # Path to the folder containing the Stata data created by 0_Inschool.do. Note: the trailing "/" is required.
+PATH_DATA_OUT <- "~/Dropbox/Data/AHdata/PEEffort/" # Path to the folder where the prepared data will be saved. Note: the trailing "/" is required.
+PATH_RESULTS  <- "~/Dropbox/Academy/1.Papers/EffortGPA/Code-EffortGPA/_output/" # Path to the output folder. Note: the trailing "/" is required.
 
 # the finale data set is save in the 'filname' path and can be loaded if saved before
 # otherwise, the code will be ran to prepare the data
-vdep           <- "gpa"
-filname        <- paste0("../../../Data/AHdata/PEEffort/AHD", vdep, ".rda") 
+filname        <- paste0(PATH_DATA_OUT, "Gpa.rda") 
 if (file.exists(filname)) {
   load(file = filname)
 } else {
   # Data
-  mydata       <- read.dta13("../../../Data/AHdata/cleandta.dta")  # data from Stata
+  mydata       <- read.dta13(paste0(PATH_DATA_IN, "cleandta.dta"))  
   mydata       <- mydata[order(mydata$sschlcde),] 
   mydata$club  <- ifelse(mydata$nclubs > 0, 1, 0)
   mydata$male  <- 1 - mydata$female
@@ -45,12 +41,12 @@ if (file.exists(filname)) {
   # list of variable (excluding reference variables)
   va.all.names   <- c("male", "female", "age", "hispanic", "racewhite", "raceblack", "raceasian", "raceother", 
                       "withbothpar", "yearinschl", "club", "mehigh", "melhigh", "memhigh", "memiss", "mjprof", 
-                      "mjhome", "mjother", "mjmiss", vdep)
+                      "mjhome", "mjother", "mjmiss", "gpa")
   
   # list of variable (excluding reference variables for identification)
   va.names      <- c("female", "age", "hispanic", "raceblack", "raceasian", "raceother", 
                      "withbothpar", "yearinschl", "club", "melhigh", "memhigh", "memiss", "mjprof", 
-                     "mjother", "mjmiss", vdep)
+                     "mjother", "mjmiss", "gpa")
   
   # remove friend from different groups
   # remove self friendship
@@ -226,11 +222,14 @@ allVar         <- peer.avg(norm.network(G), mydata[,va.all.names])
 allVar[hnFr,]  <- NA
 allVar         <- cbind(mydata[,va.all.names], allVar)
 
-# Descriptive stat
+# Descriptive stat (Table 2)
+if (!dir.exists(paste0(PATH_RESULTS, "DescStat"))) {
+  dir.create(paste0(PATH_RESULTS, "DescStat"), recursive = TRUE)
+}
 sdes           <- round(t(apply(allVar, 2, my.stat.des)), 3)[,c(1,2,9,10)]
 sdes
 print(sdes)
-write.csv(sdes, file = paste0("_output/sdes", vdep, ".csv"))
+write.csv(sdes, file = paste0(PATH_RESULTS, "DescStat/sdes.csv"))
 
 # friends
 cumsum         <- c(0, cumsum(sch.size))
@@ -246,7 +245,7 @@ Friends        <- data.frame(gender      = ifelse(mydata$male == 1, "male", "fem
                              hasfrfemale = nhafrfemale)
 (sumFriends    <- Friends %>% group_by(gender) %>% summarise(across(c("hasfr", "hasfrmale", "hasfrfemale"), mean)) %>% bind_rows(
   Friends %>% summarise(across(c("hasfr", "hasfrmale", "hasfrfemale"), mean))))
-write.csv(sumFriends, file = paste0("_output/FriendsByGender", vdep, ".csv"))
+write.csv(sumFriends, file = paste0(PATH_RESULTS, "DescStat/FriendsByGender.csv"))
 # gender   nfr  nffr  nmfr
 # <chr>  <dbl> <dbl> <dbl>
 # female  3.64  2.28  1.36
@@ -257,24 +256,25 @@ write.csv(sumFriends, file = paste0("_output/FriendsByGender", vdep, ".csv"))
 sdes.nofriends <- round(t(apply(allVar[nhafr == 0,], 2, my.stat.des)), 3)[,c(1,2,9,10)]
 sdes.nofriends
 print(sdes.nofriends)
-write.csv(sdes.nofriends, file = paste0("_output/sdes.nofriends", vdep, ".csv"))
+write.csv(sdes.nofriends, file = paste0(PATH_RESULTS, "DescStat/sdes.nofriends.csv"))
 
 # distribution of number of friends
-disthasfr      <- Friends %>% group_by(hasfr) %>% summarise(count = length(hasfr))
+disthasfr      <- Friends %>% group_by(hasfr) %>% summarise(count = length(hasfr)) %>%
+  ungroup() %>% mutate(prob = count/sum(count))
 print(as.data.frame(disthasfr), row.names = FALSE)
-# hasfr count
-# 0 14900
-# 1  6402
-# 2  7240
-# 3  7889
-# 4  7768
-# 5  6886
-# 6  5893
-# 7  4920
-# 8  3657
-# 9  2185
-# 10   690
-write.csv(disthasfr, file = paste0("_output/distHasFriends", vdep, ".csv"))
+# hasfr count       prob
+# 0 14900 0.21774076
+# 1  6402 0.09355546
+# 2  7240 0.10580155
+# 3  7889 0.11528569
+# 4  7768 0.11351746
+# 5  6886 0.10062838
+# 6  5893 0.08611720
+# 7  4920 0.07189829
+# 8  3657 0.05344147
+# 9  2185 0.03193044
+# 10   690 0.01008330
+write.csv(disthasfr, file = paste0(PATH_RESULTS, "DescStat/distHasFriends.csv"))
 
 # distribution of the number of times the student is a friends
 distisfr        <- Friends %>% group_by(isfr) %>% summarise(count = length(isfr))
@@ -310,7 +310,7 @@ print(as.data.frame(distisfr), row.names = FALSE)
 # 28     1
 # 29     1
 # 35     1
-write.csv(distisfr, file = paste0("_output/distIsFriends", vdep, ".csv"))
+write.csv(distisfr, file = paste0(PATH_RESULTS, "DescStat/distIsFriends.csv"))
 
 (tabFriends     <- table(Friends$isfr, Friends$hasfr))
 # 0    1    2    3    4    5    6    7    8    9   10
@@ -344,7 +344,7 @@ write.csv(distisfr, file = paste0("_output/distIsFriends", vdep, ".csv"))
 # 28    0    0    0    0    0    1    0    0    0    0    0
 # 29    0    0    0    0    0    0    0    1    0    0    0
 # 35    0    0    0    0    0    0    1    0    0    0    0
-write.csv(tabFriends, file = paste0("_output/tabFriends", vdep, ".csv"))
+write.csv(tabFriends, file = paste0(PATH_RESULTS, "DescStat/tabFriends.csv"))
 
 ggplot(data = data.frame(nfriends = factor(nhafr)), aes(x = nfriends)) +
   geom_bar(aes(y = (..count..)/sum(..count..)), color = "black", fill = "#eeeeee") + 

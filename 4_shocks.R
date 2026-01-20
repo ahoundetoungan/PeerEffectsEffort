@@ -11,7 +11,7 @@ library(dplyr)
 library(ggplot2)
 
 proot <- c("~/GPAeffort",
-           "~/Dropbox/Papers - In progress/EffortGPA/Code-EffortGPA")
+           "~/Dropbox/Academy/1.Papers/EffortGPA/Code-EffortGPA")
 root  <- sapply(proot, dir.exists)
 root  <- proot[root][1]
 setwd(root)
@@ -20,7 +20,7 @@ setwd(root)
 Rcpp::sourceCpp("codefiles/SourceCpp.cpp")
 source("codefiles/SourceR.R")
 
-load(file = paste0("../../../Data/AHdata/PEEffort/AHD", dvar, ".rda"))
+load(file = paste0("../../../../Data/AHdata/PEEffort/AHD", dvar, ".rda"))
 rm("Xlogit")
 gc()
 

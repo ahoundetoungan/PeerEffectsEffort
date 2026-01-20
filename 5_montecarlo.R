@@ -8,18 +8,16 @@ rm(list = ls())
 library(AER)
 library(PartialNetwork)
 library(MASS)
+library(Rcpp)
 library(doParallel)
 
-# Please, add your working directory in proot
-proot <- c("~/GPAeffort",
-           "~/Dropbox/Papers - In progress/EffortGPA/Code-EffortGPA")
-root  <- sapply(proot, dir.exists)
-root  <- proot[root][1]
-setwd(root)
+PATH_DATA_OUT <- "~/Dropbox/Data/AHdata/PEEffort/" # Path to the folder where the prepared data will be saved. Note: the trailing "/" is required.
+PATH_RESULTS  <- "~/Dropbox/Academy/1.Papers/EffortGPA/Code-EffortGPA/_output/" # Path to the output folder. Note: the trailing "/" is required.
+PATH_CODE     <- "~/Dropbox/Academy/1.Papers/EffortGPA/Code-EffortGPA/codefiles/" # Path to the code folder. Note: the trailing "/" is required.
 
-# load objects
-Rcpp::sourceCpp("codefiles/SourceCpp.cpp")
-source("codefiles/SourceR.R")
+# load source functions
+sourceCpp(paste0(PATH_CODE, "SourceCpp.cpp"))
+source(paste0(PATH_CODE, "SourceR.R"))
 
 # Parameters and sizes
 lambd <- 0.7
@@ -34,7 +32,8 @@ nsum  <- sum(nvec)
 ncum  <- c(0, cumsum(nvec))
 
 # Function that replicate one Monte Carlo simulation
-fMC   <- function(...){
+fMC   <- function(p){
+  stopifnot(length(p) == 11)
   # Simulate exogenous variables 
   x1  <- rnorm(nsum, rep(runif(M, 0, 10), nvec), 4)
   x2  <- rpois(nsum, rep(runif(M, 0, 10), nvec))
@@ -44,7 +43,7 @@ fMC   <- function(...){
   A   <- lapply(1:M, function(x){
     mat <- matrix(0, nvec[x], nvec[x])
     for (i in 1:nvec[x]) {
-      nfr <- sample(0:10, 1, prob = (1/((1:11)^0.6))/sum(1/((1:11)^0.6)))
+      nfr <- sample(0:10, 1, prob = p/sum(p))
       if(nfr > 0){
         mat[i, sample((1:nvec[x])[-i], nfr)] <- 1
       }
@@ -58,11 +57,11 @@ fMC   <- function(...){
   epseta <- mvrnorm(nsum, mu = c(0, 0), Sigma = Sigma)
   eps    <- epseta[,1]
   eta    <- epseta[,2]
-    
+  
   # Simulate effort
   c0     <- -1.5*rep(sapply(1:M, function(x) quantile(x2[(ncum[x] + 1):ncum[x + 1]], 0.9)), nvec)
   effort <- c(peer.avg(lapply(1:M, function(x) solve(diag(nvec[x]) - lambd*G[[x]])), 
-                     c0 + X%*%beta + peer.avg(G, X%*%gamma) + eps))
+                       c0 + X%*%beta + peer.avg(G, X%*%gamma) + eps))
   
   # Compute GPA
   gpaA    <- effort + eta # DGP A: alpha = 0
@@ -103,10 +102,6 @@ fMC   <- function(...){
   # GMM
   ## formula and instruments
   va.exo  <- c("x1", "x2")
-  formA0  <- as.formula(paste("gpaA ~", paste(c("G_gpaA", va.exo, paste0("G_", va.exo)), collapse = "+")))
-  formB0  <- as.formula(paste("gpaB ~", paste(c("G_gpaB", va.exo, paste0("G_", va.exo)), collapse = "+")))
-  formC0  <- as.formula(paste("gpaC ~", paste(c("G_gpaC", va.exo, paste0("G_", va.exo)), collapse = "+")))
-  instr0  <- as.formula(paste("~", paste(c(va.exo, paste0("G_", va.exo), paste0("GG_", va.exo)), collapse = "+")))
   formA1  <- as.formula(paste("F1_gpaA ~", paste(c(-1, "F1G_gpaA", paste0("F1_", va.exo), paste0("F1G_", va.exo)), collapse = "+")))
   formB1  <- as.formula(paste("F1_gpaB ~", paste(c(-1, "F1G_gpaB", paste0("F1_", va.exo), paste0("F1G_", va.exo)), collapse = "+")))
   formC1  <- as.formula(paste("F1_gpaC ~", paste(c(-1, "F1G_gpaC", paste0("F1_", va.exo), paste0("F1G_", va.exo)), collapse = "+")))
@@ -120,11 +115,8 @@ fMC   <- function(...){
   formC3  <- as.formula(paste("F3_gpaC ~", paste(c(-1, "F3G_gpaC", paste0("F3_", va.exo), paste0("F3G_", va.exo)), collapse = "+")))
   instr3  <- as.formula(paste("~", paste(c(-1, paste0("F3_", va.exo), paste0("F3G_", va.exo), paste0("F3GG_", va.exo)), collapse = "+")))
   
-
-  out     <- c(ivreg(formula = formA0, instruments = instr0, data = mydata0)$coefficients,
-               ivreg(formula = formB0, instruments = instr0, data = mydata0)$coefficients,
-               ivreg(formula = formC0, instruments = instr0, data = mydata0)$coefficients,
-               ivreg(formula = formA1, instruments = instr1, data = mydata1)$coefficients,
+  
+  out     <- c(ivreg(formula = formA1, instruments = instr1, data = mydata1)$coefficients,
                ivreg(formula = formB1, instruments = instr1, data = mydata1)$coefficients,
                ivreg(formula = formC1, instruments = instr1, data = mydata1)$coefficients)
   
@@ -135,7 +127,7 @@ fMC   <- function(...){
   mlA2    <- foptim(outA2$residuals, outA2$coefficients["F1G_gpaA"], G, fixed.effects = TRUE, F1, start = c(1.37, 0.4))
   mlB2    <- foptim(outB2$residuals, outB2$coefficients["F1G_gpaB"], G, fixed.effects = TRUE, F1, start = c(1.37, 0.4))
   mlC2    <- foptim(outA2$residuals, outC2$coefficients["F1G_gpaC"], G, fixed.effects = TRUE, F1, start = c(1.37, 0.4))
-
+  
   outA3   <- ivreg(formula = formA3, instruments = instr3, data = mydata3)
   outB3   <- ivreg(formula = formB3, instruments = instr3, data = mydata3)
   outC3   <- ivreg(formula = formC3, instruments = instr3, data = mydata3)
@@ -151,11 +143,29 @@ fMC   <- function(...){
     outC3$coefficients, unlist(mlC3[c("sigma2epsilon", "sigma2eta", "rho")]))
 }
 
+# Distribution of the number of friends in AddHealth
+load(file = paste0(PATH_DATA_OUT, "Gpa.rda"))
+rm("Xlogit")
+gc()
+pfriends <- proportions(table(unlist(lapply(G, rowSums))))
+
+if (!dir.exists(paste0(PATH_RESULTS, "MonteCarlo"))) {
+  dir.create(paste0(PATH_RESULTS, "MonteCarlo"), recursive = TRUE)
+}
+
+# Simulations
 RNGkind("L'Ecuyer-CMRG")
 set.seed(1234)
 
-outMC <- t(apply(do.call(cbind, mclapply(1:1000, function(x){cat("Iteration: ", x, "\n", sep = ""); fMC()}, mc.cores = 10)), 1, 
-               function(x) c(mean = mean(x), sderr = sd(x), "Pctl 25%" = quantile(x, 0.25), "Pctl 75%" = quantile(x, 0.75))))
-outMC
+p        <- lapply(c(0.01, 0.05, 0.1, pfriends[1]), function(x){
+  tp     <- pfriends
+  tp[-1] <- tp[-1]*(sum(tp) - x)/sum(tp[-1])
+  tp[1]  <- x
+  tp})
 
-write.csv(outMC, file = "_output/simu.alpha.csv")
+outMC    <- lapply(p, function(tp){
+  t(apply(do.call(cbind, mclapply(1:2, function(x){cat("Iteration: ", x, "\n", sep = ""); fMC(tp)}, mc.cores = 10)), 1, 
+          function(x) c(mean = mean(x), sderr = sd(x), "Pctl 25%" = quantile(x, 0.25), "Pctl 75%" = quantile(x, 0.75))))})
+outMC    <- do.call(cbind, outMC)
+
+write.csv(outMC, file = paste0(PATH_RESULTS, "MonteCarlo/MonteCarlo.csv"))

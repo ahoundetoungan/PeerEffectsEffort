@@ -11,7 +11,7 @@ library(dplyr)
 library(splines)
 
 proot <- c("~/GPAeffort",
-           "~/Dropbox/Papers - In progress/EffortGPA/Code-EffortGPA")
+           "~/Dropbox/Academy/1.Papers/EffortGPA/Code-EffortGPA")
 root  <- sapply(proot, dir.exists)
 root  <- proot[root][1]
 setwd(root)
@@ -20,7 +20,7 @@ setwd(root)
 # load objects
 Rcpp::sourceCpp("codefiles/SourceCpp.cpp")
 source("codefiles/SourceR.R")
-load(file = "../../../Data/AHdata/PEEffort/AHDgpa.rda")
+load(file = "../../../../Data/AHdata/PEEffort/AHDgpa.rda")
 load("_output/Net.FE.rda")
 load("_output/mu.RE.rda")
 
