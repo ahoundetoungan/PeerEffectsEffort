@@ -2,25 +2,18 @@
 #' Aristide Houndetoungan, Cristelle Kouame, and Michael Vlassopoulos
 #'
 #' This file simulates schocks to GPA
-# set dvar
-dvar  <- "gpa"
-rm(list = ls()[ls() != "dvar"])
 library(PartialNetwork)
 library(AER)
 library(dplyr)
 library(ggplot2)
 
-proot <- c("~/GPAeffort",
-           "~/Dropbox/Academy/1.Papers/EffortGPA/Code-EffortGPA")
-root  <- sapply(proot, dir.exists)
-root  <- proot[root][1]
-setwd(root)
+setwd("XXX")
 
 # load objects
 Rcpp::sourceCpp("codefiles/SourceCpp.cpp")
 source("codefiles/SourceR.R")
 
-load(file = paste0("../../../../Data/AHdata/PEEffort/AHD", dvar, ".rda"))
+load(file = paste0("Data/AHDgpa.rda"))
 rm("Xlogit")
 gc()
 

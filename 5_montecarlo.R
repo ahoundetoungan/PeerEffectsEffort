@@ -11,9 +11,9 @@ library(MASS)
 library(Rcpp)
 library(doParallel)
 
-PATH_DATA_OUT <- "~/Dropbox/Data/AHdata/PEEffort/" # Path to the folder where the prepared data will be saved. Note: the trailing "/" is required.
-PATH_RESULTS  <- "~/Dropbox/Academy/1.Papers/EffortGPA/Code-EffortGPA/_output/" # Path to the output folder. Note: the trailing "/" is required.
-PATH_CODE     <- "~/Dropbox/Academy/1.Papers/EffortGPA/Code-EffortGPA/codefiles/" # Path to the code folder. Note: the trailing "/" is required.
+PATH_DATA_OUT <- "Location/To/Save/Prepared/Data/" # Path to the folder where the prepared data will be saved. Note: the trailing "/" is required.
+PATH_RESULTS  <- "Location/To/Save/Results/_output/" # Path to the output folder. Note: the trailing "/" is required.
+PATH_CODE     <- "Location/For/Code/codefiles/" # Path to the code folder. Note: the trailing "/" is required.
 
 # load source functions
 sourceCpp(paste0(PATH_CODE, "SourceCpp.cpp"))

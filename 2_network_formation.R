@@ -8,16 +8,12 @@ library(CDatanet)
 library(AER)
 library(dplyr)
 
-proot <- c("~/GPAeffort",
-           "~/Dropbox/Academy/1.Papers/EffortGPA/Code-EffortGPA")
-root  <- sapply(proot, dir.exists)
-root  <- proot[root][1]
-setwd(root)
+setwd("XXX")
 
 # load objects
 Rcpp::sourceCpp("codefiles/SourceCpp.cpp")
 source("codefiles/SourceR.R")
-load(file = "../../../../Data/AHdata/PEEffort/AHDgpa.rda")
+load(file = "Data/AHDgpa.rda")
 gc()
 
 

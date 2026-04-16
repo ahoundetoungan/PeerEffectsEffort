@@ -10,20 +10,16 @@ library(AER)
 library(dplyr)
 library(splines)
 
-proot <- c("~/GPAeffort",
-           "~/Dropbox/Academy/1.Papers/EffortGPA/Code-EffortGPA")
-root  <- sapply(proot, dir.exists)
-root  <- proot[root][1]
-setwd(root)
+setwd("XXX")
 
 ################### Computation of B-spline
 # load objects
 Rcpp::sourceCpp("codefiles/SourceCpp.cpp")
 source("codefiles/SourceR.R")
-load(file = "../../../../Data/AHdata/PEEffort/AHDgpa.rda")
+
+load(file = "Data/AHDgpa.rda")
 load("_output/Net.FE.rda")
 load("_output/mu.RE.rda")
-
 
 # data
 data         <- data.frame(muout.fe = homoFE$estimate$mu, muin.fe = homoFE$estimate$nu, muout.re = muout, muin.re = muin)
@@ -64,7 +60,7 @@ saveRDS(out, file = paste0("_output/data.np", k, ".RDS"))
 rm(list = ls())
 Rcpp::sourceCpp("codefiles/SourceCpp.cpp")
 source("codefiles/SourceR.R")
-load(file = "../../../Data/AHdata/PEEffort/AHDgpa.rda")
+load(file = "Data/AHDgpa.rda")
 rm("Xlogit")
 gc()
 

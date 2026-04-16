@@ -9,9 +9,9 @@ library(dplyr)
 library(fastDummies)
 library(Rcpp)
 
-PATH_DATA_OUT <- "~/Dropbox/Data/AHdata/PEEffort/" # Path to the folder where the prepared data will be saved. Note: the trailing "/" is required.
-PATH_RESULTS  <- "~/Dropbox/Academy/1.Papers/EffortGPA/Code-EffortGPA/_output/" # Path to the output folder. Note: the trailing "/" is required.
-PATH_CODE     <- "~/Dropbox/Academy/1.Papers/EffortGPA/Code-EffortGPA/codefiles/" # Path to the code folder. Note: the trailing "/" is required.
+PATH_DATA_OUT <- "Location/To/Save/Prepared/Data/" # Path to the folder where the prepared data will be saved. Note: the trailing "/" is required.
+PATH_RESULTS  <- "Location/To/Save/Results/_output/" # Path to the output folder. Note: the trailing "/" is required.
+PATH_CODE     <- "Location/For/Code/codefiles/" # Path to the code folder. Note: the trailing "/" is required.
 
 #########################################################################################################
 #########################################################################################################
@@ -406,13 +406,13 @@ for (prem in lprem) {
     gc()
     
     ## Formula
-    ### With fixed effects and without dummy for isolated students (Formula for Model 1 in Table 3)
+    ### With fixed effects and without dummy for isolated students (Formula for Model 1 in Table 5)
     form1      <- as.formula(paste0("F1_gpa ~", paste(c(-1, "F1G_gpa", paste0("F1_", va.exo), paste0("F1G_", va.exo)), collapse = "+")))
     instr1     <- as.formula(paste0("~", paste(c(-1, paste0("F1_", va.exo), paste0("F1G_", va.exo), paste0("F1GG_", va.exo)), collapse = "+")))
-    ### With fixed effects and with dummy for isolated students (Formula for Model 2 in Table 3)
+    ### With fixed effects and with dummy for isolated students (Formula for Model 2 in Table 5)
     form2      <- as.formula(paste0("F1_gpa ~", paste(c(-1, "F1G_gpa", "F1_hasfriends", paste0("F1_", va.exo), paste0("F1G_", va.exo)), collapse = "+")))
     instr2     <- as.formula(paste0("~", paste(c(-1, paste0("F1_", va.exo), paste0("F1G_", va.exo), paste0("F1GG_", va.exo)), collapse = "+"), "+ F1_hasfriends + F1G_hasfriends"))
-    ### With fixed effects and with dummy for isolated students per school (Formula for Model 3 in Table 3)
+    ### With fixed effects and with dummy for isolated students per school (Formula for Model 3 in Table 5)
     form3      <- as.formula(paste0("F3_gpa ~", paste(c(-1, "F3G_gpa", paste0("F3_", va.exo), paste0("F3G_", va.exo)), collapse = "+")))
     instr3     <- as.formula(paste0("~", paste(c(-1, paste0("F3_", va.exo), paste0("F3G_", va.exo), paste0("F3GG_", va.exo)), collapse = "+")))
     
@@ -503,19 +503,19 @@ GX            <- peer.avg(G, X); colnames(GX) <- paste0("G_", colnames(X))
 mydata        <- cbind(mydata, GX, "hasfriends" = hasfriends, FE, nIsFE, IsFE)
 
 ## X variables
-### With fixed effects and with dummy for isolated students (Model 1 in Table B3)
+### With fixed effects and with dummy for isolated students (Model 1 in Table E3)
 Xvar1 <- c(va.exo, paste0("G_", va.exo), fe)
-### With fixed effects and with dummy for isolated students (Model 2 in Table B3)
+### With fixed effects and with dummy for isolated students (Model 2 in Table E3)
 Xvar2 <- c(va.exo, paste0("G_", va.exo), "hasfriends", fe)
-### With fixed effects and with dummy for isolated students per school (Model 3 in Table B3)
+### With fixed effects and with dummy for isolated students per school (Model 3 in Table E3)
 Xvar3 <- c(va.exo, paste0("G_", va.exo), feis, fenis)
 
 ## Estimation
-if (!dir.exists(paste0(PATH_RESULTS, "Table B3"))) {
-  dir.create(paste0(PATH_RESULTS, "Table B3"), recursive = TRUE)
+if (!dir.exists(paste0(PATH_RESULTS, "Table E3"))) {
+  dir.create(paste0(PATH_RESULTS, "Table E3"), recursive = TRUE)
 }
 
-### With fixed effects and without dummy for isolated students (Model 1 in Table B3)
+### With fixed effects and without dummy for isolated students (Model 1 in Table E3)
 parm0 <- c(0.386022, rep(0, length(Xvar1)), 0.968185, 1.12965, -0.738497)
 post1 <- fTobit(mydata$gpa, V = as.matrix(mydata[,Xvar1]), G = G, sim = 5e4,
                 nthreads = parallel::detectCores() - 1, lby = 1, uby = 4,
@@ -524,10 +524,10 @@ post1 <- fTobit(mydata$gpa, V = as.matrix(mydata[,Xvar1]), G = G, sim = 5e4,
 colnames(post1$parms) <- c("lambda", Xvar1, "seta", "sepsilon", "rho")
 write.csv(data.frame(variables = colnames(post1$parms), t(apply(post1$parms, 2, \(x){
   c(coef = mean(tail(x, 25e3)), sd = sd(tail(x, 25e3)))
-}))), file = paste0(PATH_RESULTS, "Table B3/Model1.csv"))
-saveRDS(post1, file = paste0(PATH_RESULTS, "Table B3/Model1.RDS"))
+}))), file = paste0(PATH_RESULTS, "Table E3/Model1.csv"))
+saveRDS(post1, file = paste0(PATH_RESULTS, "Table E3/Model1.RDS"))
 
-### With fixed effects and with dummy for isolated students (Model 2 in Table B3)
+### With fixed effects and with dummy for isolated students (Model 2 in Table E3)
 parm0 <- c(0.386022, rep(0, length(Xvar2)), 0.968185, 1.12965, -0.738497)
 post2 <- fTobit(mydata$gpa, V = as.matrix(mydata[,Xvar2]), G = G, sim = 5e4,
                 nthreads = parallel::detectCores() - 1, lby = 1, uby = 4,
@@ -536,10 +536,10 @@ post2 <- fTobit(mydata$gpa, V = as.matrix(mydata[,Xvar2]), G = G, sim = 5e4,
 colnames(post2$parms) <- c("lambda", Xvar2, "seta", "sepsilon", "rho")
 write.csv(data.frame(variables = colnames(post2$parms), t(apply(post2$parms, 2, \(x){
   c(coef = mean(tail(x, 25e3)), sd = sd(tail(x, 25e3)))
-}))), file = paste0(PATH_RESULTS, "Table B3/Model2.csv"))
-saveRDS(post2, file = paste0(PATH_RESULTS, "Table B3/Model2.RDS"))
+}))), file = paste0(PATH_RESULTS, "Table E3/Model2.csv"))
+saveRDS(post2, file = paste0(PATH_RESULTS, "Table E3/Model2.RDS"))
 
-### With fixed effects and with dummy for isolated students per school (Model 3 in Table B3)
+### With fixed effects and with dummy for isolated students per school (Model 3 in Table E3)
 parm0 <- c(0.489059, rep(0, length(Xvar3)), 0.767328, 0.823438, -0.534227)
 post3 <- fTobit(mydata$gpa, V = as.matrix(mydata[,Xvar3]), G = G, sim = 5e4,
                 nthreads = parallel::detectCores() - 1, lby = 1, uby = 4,
@@ -548,5 +548,5 @@ post3 <- fTobit(mydata$gpa, V = as.matrix(mydata[,Xvar3]), G = G, sim = 5e4,
 colnames(post3$parms) <- c("lambda", Xvar3, "seta", "sepsilon", "rho")
 write.csv(data.frame(variables = colnames(post3$parms), t(apply(post3$parms, 2, \(x){
   c(coef = mean(tail(x, 25e3)), sd = sd(tail(x, 25e3)))
-}))), file = paste0(PATH_RESULTS, "Table B3/Model3.csv"))
-saveRDS(post3, file = paste0(PATH_RESULTS, "Table B3/Model3.RDS"))
+}))), file = paste0(PATH_RESULTS, "Table E3/Model3.csv"))
+saveRDS(post3, file = paste0(PATH_RESULTS, "Table E3/Model3.RDS"))

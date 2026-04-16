@@ -10,9 +10,9 @@ library(readstata13)
 library(ggplot2)
 library(PartialNetwork)
 
-PATH_DATA_IN  <- "~/Dropbox/Data/AHdata/"  # Path to the folder containing the Stata data created by 0_Inschool.do. Note: the trailing "/" is required.
-PATH_DATA_OUT <- "~/Dropbox/Data/AHdata/PEEffort/" # Path to the folder where the prepared data will be saved. Note: the trailing "/" is required.
-PATH_RESULTS  <- "~/Dropbox/Academy/1.Papers/EffortGPA/Code-EffortGPA/_output/" # Path to the output folder. Note: the trailing "/" is required.
+PATH_DATA_IN  <- "Data/From/The/Stata/Code/Location/"  # Path to the folder containing the Stata data created by 0_Inschool.do. Note: the trailing "/" is required.
+PATH_DATA_OUT <- "Location/To/Save/Prepared/Data/" # Path to the folder where the prepared data will be saved. Note: the trailing "/" is required.
+PATH_RESULTS  <- "Location/To/Save/Results/_output/" # Path to the output folder. Note: the trailing "/" is required.
 
 # the finale data set is save in the 'filname' path and can be loaded if saved before
 # otherwise, the code will be ran to prepare the data
