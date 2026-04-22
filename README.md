@@ -1,17 +1,17 @@
-# Replication Package for "Identifying Peer Effects in Networks with Unobserved 
-# Effort and Isolated Students"
+**Replication Package for "Identifying Peer Effects in Networks with Unobserved 
+Effort and Isolated Students"**
 
 This folder contains the necessary files to replicate the results in the main 
 paper and the online appendix. 
 
-## R and Cpp functions
+### R and Cpp functions
 * Files `SourceR.R` and `SourceCpp.cpp` contain functions built in **R** and 
 **cpp** to be used in other files.
 
-## Monte Carlo Simulations
+### Monte Carlo Simulations
 * `montecarlo.R` replicates our simulation study.
 
-## Empirical Application
+### Empirical Application
 * This application uses data from Add Health, a program directed by Kathleen 
 Mullan Harris and designed by J. Richard Udry, Peter S. Bearman, and Kathleen 
 Mullan Harris at the University of North Carolina at Chapel Hill, and funded by 
