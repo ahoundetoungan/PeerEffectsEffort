@@ -1,5 +1,4 @@
-## Replication Package for "Identifying Peer Effects in Networks with Unobserved 
-Effort and Isolated Students
+## Replication Package for "Identifying Peer Effects in Networks with Unobserved Effort and Isolated Students
 
 This folder contains the necessary files to replicate the results in the main 
 paper and the online appendix. 
